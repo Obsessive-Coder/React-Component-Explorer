@@ -12,4 +12,6 @@ export default class ComponentTreeItem extends TreeItem {
   get tooltip():string {
     return `${this.label} - ${this.description}`;
   }
+
+  contextValue = 'componentLibrary';
 };

@@ -53,6 +53,14 @@
 				"title": "Add Library"
 			},
 			{
+				"command": "reactComponents.removeLibrary",
+				"title": "Remove",
+				"icon": {
+					"light": "resources/light/trash.svg",
+					"dark": "resources/dark/trash.svg"
+				}
+			},
+			{
 				"command": "reactComponents.insertComponent",
 				"title": "Insert Component",
 				"icon": {
@@ -77,6 +85,11 @@
 				{
 					"command": "reactComponents.insertComponent",
 					"when": "view == reactComponents && viewItem == componentSnippet",
+					"group": "inline"
+				},
+				{
+					"command": "reactComponents.removeLibrary",
+					"when": "view == reactComponents && viewItem == componentLibrary",
 					"group": "inline"
 				}
 			]
