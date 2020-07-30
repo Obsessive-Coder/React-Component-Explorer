@@ -1,14 +1,23 @@
 {
 	"name": "react-component-explorer",
+	"version": "0.0.1",
+	"publisher": "ObsessiveCoder",
+	"author": "Jared Huffstutler",
 	"displayName": "React Component Explorer",
 	"description": "Shows a list of React components in a sidebar panel and allows you to quickly add the component to your file.",
-	"version": "0.0.1",
+	"icon": "resources/reactIcon.png",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/Obsessive-Coder/React-Component-Explorer"
+	},
+	"categories": [
+		"Programming Languages",
+		"Snippets",
+		"Other"
+	],
 	"engines": {
 		"vscode": "^1.47.0"
 	},
-	"categories": [
-		"Other"
-	],
 	"activationEvents": [
 		"onView:reactComponents"
 	],
