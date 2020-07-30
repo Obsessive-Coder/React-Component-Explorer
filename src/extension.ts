@@ -56,11 +56,23 @@ export function activate(context: ExtensionContext) {
 		componentSnippetsProvider.refresh();
 	});
 
+	commands.registerCommand('reactComponents.doubleClick', (treeItem: SnippetTreeItem) => {
+		const timeNow: number = new Date().getTime();
+		const timeSinceLastClick: number = Math.abs(timeNow - treeItem.lastClick);
+
+		treeItem.lastClick = timeNow;
+
+		if (timeSinceLastClick <= 500) {
+			commands.executeCommand('reactComponents.insertComponent', treeItem);
+			treeItem.lastClick = -1;
+		}
+	});
+
 	commands.registerCommand('reactComponents.insertComponent', (treeItem: SnippetTreeItem) => {
 		const editor = window.activeTextEditor;
 		if (!editor) { return; };
 
-		editor.insertSnippet(new SnippetString(treeItem.snippetString));
+		return editor.insertSnippet(new SnippetString(treeItem.snippetString));
 	});
 }
 

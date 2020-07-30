@@ -1,4 +1,4 @@
-import { SnippetString, TreeItem, TreeItemCollapsibleState } from 'vscode';
+import { Command, TreeItem, TreeItemCollapsibleState } from 'vscode';
 
 export default class SnippetTreeItem extends TreeItem {
   constructor(
@@ -16,6 +16,15 @@ export default class SnippetTreeItem extends TreeItem {
   get tooltip():string {
     return `${this.label} - ${this.description}`;
   }
+
+  // lastClick: number = new Date().getTime();
+  lastClick: number = -1;
+
+  command = {
+    command: 'reactComponents.doubleClick',
+    title:'Insert Component',
+    arguments: [this]
+};
 
   contextValue = 'componentSnippet';
 };
