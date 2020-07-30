@@ -5,17 +5,12 @@ import {
 
 import { ComponentTreeItem, SnippetTreeItem } from '.';
 import { IComponentLibraryData } from '../interfaces';
-import { FILE_PATH_REGEX } from '../utils/constants';
 
 import fs = require('fs');
 
 export default class ComponentSnippetsProvider implements
   TreeDataProvider<TreeItem> {
-    // componentLibraries: IComponentLibraryData[] = [];
-
-    constructor(private workspaceRoot:  string, public componentLibraries: IComponentLibraryData[]) {
-      // this.componentLibraries = componentLibraries;
-    }
+    constructor(private workspaceRoot:  string, public componentLibraries: IComponentLibraryData[]) {}
 
     private _onDidChangeTreeData: EventEmitter<ComponentTreeItem | undefined> = new EventEmitter<ComponentTreeItem | undefined>();
 
@@ -35,40 +30,66 @@ export default class ComponentSnippetsProvider implements
         return Promise.resolve([]);
       }
 
-      const treeItems: TreeItem[] = element ? (
-        this.getComponentItems(element.label)) : this.getComponentLibraryItems();
+      let treeItems: TreeItem[] = [];
+      if (element) {
+        const isLibraryItem: boolean = element.contextValue === 'componentLibrary';
+        treeItems = isLibraryItem ? (
+          this.getComponentItems(element.label)
+        ) : treeItems.concat(element.snippets);
+      } else {
+        treeItems = this.getComponentLibraryItems();
+      }
 
       return Promise.resolve(treeItems);
     }
 
-    getComponentLibraryItem(snippetsPath: string) {
-      const pathFolders: string[] = snippetsPath.split(FILE_PATH_REGEX);
-      const fileName: string = pathFolders[pathFolders.length - 1];
-      const libraryName: string = fileName.split('.')[0];
-
-      return new ComponentTreeItem(libraryName, '', TreeItemCollapsibleState.Collapsed);
-    }
-
-    private getComponentLibraryItems(): ComponentTreeItem[] {
+    private getComponentLibraryItems(): TreeItem[] {
       const libraryNames: string[] = this.componentLibraries.map(
         ({ name }: IComponentLibraryData) => name);
 
-      return libraryNames.map((libraryName: string) => (
-        new ComponentTreeItem(libraryName, '', TreeItemCollapsibleState.Collapsed)
-      ));
+      return libraryNames.map((libraryName: string) => {
+        const libraryItem = new TreeItem(
+          libraryName, TreeItemCollapsibleState.Collapsed);
+        libraryItem.contextValue = 'componentLibrary';
+        return libraryItem;
+      });
     }
 
-    private getComponentItems(libraryName: string): SnippetTreeItem[] {
-      // const snippetsPath = path.join(this.workspaceRoot, '.vscode', `${libraryName}.code-snippets`);
-
+    private getComponentItems(libraryName: string): TreeItem[] {
       const library: IComponentLibraryData = this.componentLibraries.filter(
         ({ name }: IComponentLibraryData) => (name === libraryName)
       )[0];
 
       const snippetsJSON = JSON.parse(fs.readFileSync(library.snippetsPath, 'utf-8'));
 
-      return Object.keys(snippetsJSON).map((snippetName: string) => (
-        new SnippetTreeItem(snippetName, snippetsJSON[snippetName].description, snippetsJSON[snippetName].body)
-      ));
+      const snippetsKeys: string[] = Object.keys(snippetsJSON);
+
+      const groupedSnippets = [];
+      const namesInGroups: string[] = [];
+
+      for (let i = 0; i < snippetsKeys.length; i++) {
+        const componentName = snippetsKeys[i].split(/[^a-zA-Z]+/)[0];
+
+        if (!namesInGroups.includes(componentName)) {
+          groupedSnippets.push({
+            [componentName]: snippetsKeys.filter((snippetKey: string) => (
+              snippetKey.split(/[^a-zA-Z]+/)[0] === componentName
+            )).map((item: string) => (snippetsJSON[item]))
+          });
+        }
+
+        namesInGroups.push(componentName);
+      }
+
+      return groupedSnippets.map(componentData => {
+        const componentName = Object.keys(componentData)[0];
+
+        const componentSnippetItems = componentData[componentName].map((snippet) => (
+          new SnippetTreeItem(snippet.prefix, snippet.description, snippet.body)
+        ));
+
+        return new ComponentTreeItem(
+          componentName, '', componentSnippetItems, TreeItemCollapsibleState.Collapsed);
+      });
     }
 };
