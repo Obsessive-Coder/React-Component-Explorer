@@ -4,7 +4,7 @@ Shows a list of React components in a sidebar panel and allows you to quickly ad
 
 # How It Works
 
-The list of components are populated from a VS Code snippets file. When you insert a component, its snippet is used to add it to the code editor.
+The list of components is populated from a VS Code snippets file. When you insert a component, its snippet is used to add it to the code editor.
 
 * Use existing component library snippets from the marketplace.
 * Use my other extension [React Snippet Generator](https://marketplace.visualstudio.com/items?itemName=ObsessiveCoder.react-snippet-generator) to generate snippets for your custom React component libraries.
