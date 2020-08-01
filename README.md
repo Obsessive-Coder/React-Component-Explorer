@@ -1,4 +1,4 @@
-# React Snippet Generator
+# React Component Explorer
 
 Shows a list of React components in a sidebar panel and allows you to quickly add the component to your file.
 

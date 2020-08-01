@@ -165,7 +165,7 @@ export default class ComponentSnippetsProvider implements
       const snippetsJSON = JSON.parse(fs.readFileSync(library.snippetsPath, 'utf-8'));
 
       // Group component tree items by their component name.
-      const groupedSnippets: Array<IGroupedSnippet> = this.getGroupedSnippets(snippetsJSON);
+      const groupedSnippets = this.getGroupedSnippets(snippetsJSON);
 
       // Return and array of ComponentTreeItems with their snippet items.
       return groupedSnippets.map(componentData => {
@@ -201,7 +201,7 @@ export default class ComponentSnippetsProvider implements
           ));
 
           // An object with the snippets and component name.
-          const groupedData: IGroupedSnippet = {
+          const groupedData = {
             [componentName]: componentSnippets.map(
               (item: string) => (snippetsData[item]))
           };
