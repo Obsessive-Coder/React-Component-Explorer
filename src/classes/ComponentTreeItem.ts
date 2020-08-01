@@ -2,6 +2,8 @@ import { TreeItem, TreeItemCollapsibleState } from 'vscode';
 import { SnippetTreeItem } from '.';
 
 export default class ComponentTreeItem extends TreeItem {
+  // This class extends TreeItem by adding an array of SnippetTreeItems.
+  // Instances of this class are the component items in the tree view.
   constructor(
     public readonly label: string,
     public readonly description: string,
@@ -10,10 +12,4 @@ export default class ComponentTreeItem extends TreeItem {
   ) {
     super(label, collapsibleState);
   }
-
-  get tooltip():string {
-    return `${this.label} - ${this.description}`;
-  }
-
-  contextValue = 'componentItem';
 };

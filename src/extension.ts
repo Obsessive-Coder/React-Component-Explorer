@@ -1,79 +1,37 @@
 import {
-	commands, ExtensionContext, window, workspace,
-	SnippetString, Uri
+	commands, ExtensionContext, window, workspace
 } from 'vscode';
 
-import { ComponentSnippetsProvider, SnippetTreeItem, ComponentTreeItem } from './classes';
-import { IComponentLibraryData } from './interfaces';
-import { DEFAULT_OPEN_OPTIONS, FILE_PATH_REGEX } from './utils/constants';
+import { ComponentSnippetsProvider } from './classes';
 
-import path = require('path');
+import {
+	ADD_LIBRARY_COMMAND, TREE_VIEW_ID, REFRESH_COMMAND,
+	REMOVE_LIBRARY_COMMAND, INSERT_SNIPPET_COMMAND,
+	DOUBLE_CLICK_COMMAND,
+} from './utils/constants';
 
 export function activate(context: ExtensionContext) {
-	let componentLibraries: IComponentLibraryData[] = context.workspaceState.get('componentLibraries', []);
-	// Create a new Provider.
-	const componentSnippetsProvider =
-		new ComponentSnippetsProvider(workspace.rootPath || '', componentLibraries);
+	const { workspaceState }: ExtensionContext = context;
 
-	// Create the TreeView.
-	window.createTreeView('reactComponents', {
-		treeDataProvider: componentSnippetsProvider
-	});
+	// The provider controls the tree view and its items.
+	const treeDataProvider: ComponentSnippetsProvider =
+		new ComponentSnippetsProvider(workspace.rootPath || '', workspaceState);
 
-	// Register Commands.
-	commands.registerCommand('reactComponents.refresh', () =>
-    componentSnippetsProvider.refresh()
-	);
+	// Create the TreeView with the provider.
+	window.createTreeView(TREE_VIEW_ID, { treeDataProvider });
 
-	commands.registerCommand('reactComponents.addLibrary', () => {
-		window.showOpenDialog(DEFAULT_OPEN_OPTIONS)
-			.then((selectedFolderPaths: Uri[] | undefined) => {
-				if (!selectedFolderPaths || !selectedFolderPaths.length) {
-					return;
-				}
+	// Get methods from the tree provider.
+	const {
+		refresh, addLibrary, removeLibrary, insertSnippet,
+		handleDoubleClick,
+	}: ComponentSnippetsProvider = treeDataProvider;
 
-				const { path: selectedPath }: Uri = selectedFolderPaths[0];
-				const pathFolders: string[] = selectedPath.split(FILE_PATH_REGEX);
-				const filename: string = pathFolders[pathFolders.length - 1].split('.code-snippets')[0];
-
-				const libraryData: IComponentLibraryData = {
-					name: filename,
-					snippetsPath: path.join(...pathFolders),
-				};
-
-				componentLibraries.push(libraryData);
-				context.workspaceState.update('componentLibraries', componentLibraries);
-				componentSnippetsProvider.refresh();
-			});
-	});
-
-	commands.registerCommand('reactComponents.removeLibrary', ({ label }: ComponentTreeItem) => {
-		componentLibraries = componentLibraries.filter(
-			({ name }: IComponentLibraryData) => name !== label);
-
-		componentSnippetsProvider.componentLibraries = componentLibraries;
-		context.workspaceState.update('componentLibraries', componentLibraries);
-		componentSnippetsProvider.refresh();
-	});
-
-	commands.registerCommand('reactComponents.doubleClick', (treeItem: SnippetTreeItem) => {
-		const timeNow: number = new Date().getTime();
-		const timeSinceLastClick: number = Math.abs(timeNow - treeItem.lastClick);
-
-		treeItem.lastClick = timeNow;
-
-		if (timeSinceLastClick <= 500) {
-			commands.executeCommand('reactComponents.insertComponent', treeItem);
-			treeItem.lastClick = -1;
-		}
-	});
-
-	commands.registerCommand('reactComponents.insertComponent', (treeItem: SnippetTreeItem) => {
-		const editor = window.activeTextEditor;
-		if (!editor) { return; };
-
-		return editor.insertSnippet(new SnippetString(treeItem.snippetString));
-	});
+	// Register and handle commands.
+	commands.registerCommand(REFRESH_COMMAND, refresh);
+	commands.registerCommand(ADD_LIBRARY_COMMAND, addLibrary);
+	commands.registerCommand(REMOVE_LIBRARY_COMMAND, removeLibrary);
+	commands.registerCommand(INSERT_SNIPPET_COMMAND, insertSnippet);
+	commands.registerCommand(DOUBLE_CLICK_COMMAND, handleDoubleClick);
 }
 
 export function deactivate() {}
